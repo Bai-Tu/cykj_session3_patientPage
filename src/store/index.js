@@ -35,7 +35,7 @@ var store = new Vuex.Store({//开启状态管理器
         },
         async getAdminInfo(store){
             return await http.get(
-                "/tool/parseToken",
+                "/tool1/parseToken",
                 {
                     params:{
                         token:getToken()

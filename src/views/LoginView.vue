@@ -9,6 +9,7 @@
                     <input type="password" placeholder="密码" v-model="pwd" />
                     <p></p>
                     <button @click="doLogin">登陆</button>
+                    <el-button @click="back" style="margin-top: 10px;">返回</el-button>
                 </form>
             </div>
             <div class="overlay-container">
@@ -37,7 +38,9 @@
 <script>
 import { FailInMsg } from '@/api/errorNoties';
 import {  accNotLegal, accountExist, checkCodeError, systemError } from '@/api/errorNoties';
-import {  successRigister } from '@/api/successNoties';
+import {  successInMsg, successRigister } from '@/api/successNoties';
+import {blockForThreeSeconds} from '@/api/outherTools'
+import { setToken } from '@/utils/authToken';
 
 
 export default {
@@ -59,11 +62,10 @@ export default {
     },
     methods: {
         doLogin() {
-            if(this.acc.length != 18 || this.acc.length!=11){
+            if(this.acc.length != 18 && this.acc.length!=11){
                 FailInMsg("请输入11位电话或18位身份证作为账号")
                 return
             }
-
             this.loading = true;
             this.$axios.post(
                 "/patient1/patientLogin",
@@ -72,8 +74,18 @@ export default {
                     pwd: this.pwd
                 }
             ).then((res) => {
-                console.log(res);
-                this.loading = false;
+                this.loading = false
+                if(res.code == 1){
+                    successInMsg("登陆成功，稍后会自动跳转")
+                    setToken(res.data)
+                    blockForThreeSeconds().then(() => {
+                        this.$router.push(
+                            "/"
+                        )
+                    })
+                }else if(res.code == -2){
+                    FailInMsg("账号被冻结，请联系管理员进行处理")
+                }
             })
 
         },
@@ -106,30 +118,25 @@ export default {
                 if (res.code == -2) {
                     checkCodeError()
                 } else if (res.code == -1) {
-                    // this.accountExist();
                     accountExist()
                 } else if (res.code == -100) {
                     systemError()
                 } else {
                     successRigister()
-                    alert("跳转还没做")
-                    // this.$store.dispatch('setAdmin', res.data)
-                    // blockForThreeSeconds().then(() => {
-                    //     if (location.href.includes('?redirect')) {
-                    //         var urlobj = location.href.split('redirect=')[1];
-                    //         var newDes = decodeURIComponent(urlobj);
-                    //         this.$router.push({
-                    //             path: newDes
-                    //         })
-                    //     } else {
-                    //         this.$router.push({
-                    //             path: "/main"
-                    //         })
-                    //     }
-                    // })
+                    setToken(res.data)
+                    blockForThreeSeconds().then(() => {
+                        this.$router.push(
+                            "/"
+                        )
+                    })
                 }
             })
         },
+        back(){
+            this.$router.push(
+                "/"
+            )
+        }
 
     }
 

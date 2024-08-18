@@ -13,7 +13,13 @@ var routes = [
     {
         name:"/",
         path:"/",
-        component:()=>import("../views/LoginView"),
+        component:()=>import("../views/MainView"),
+        children:[]
+    },
+    {
+        name:"main",
+        path:"/main",
+        component:()=>import("../views/MainView"),
         children:[]
     },
     {
@@ -22,6 +28,13 @@ var routes = [
         component:()=>import("../views/LoginView"),
         children:[]
     },
+    {
+        name:"patient",
+        path:"/patient",
+        component:()=>import("../views/PatientView"),
+        children:[]
+    }
+    
 ]
 
 var router = new VueRouter({
