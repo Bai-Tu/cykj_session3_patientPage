@@ -33,6 +33,12 @@ var routes = [
         path:"/patient",
         component:()=>import("../views/PatientView"),
         children:[]
+    },
+    {
+        name:"payment",
+        path:"/payment",
+        component:()=>import("../views/PaymentView"),
+        children:[]
     }
     
 ]
@@ -44,7 +50,7 @@ var router = new VueRouter({
 
 // 全局路由守卫
 router.beforeEach((to,from,next)=>{
-    var whiteList = ["/login", '/']
+    var whiteList = ["/login", '/','/main']
     var index = whiteList.indexOf(to.path)
 
     if (index == -1) {
@@ -56,9 +62,10 @@ router.beforeEach((to,from,next)=>{
                 })
             }
         } else {
-            if(store.state.admin.adminId == undefined){
+            if(store.state.admin.patientId == undefined){
                 store.dispatch("getAdminInfo").then(res=>{
                     if(res){
+                        console.log("store内的getAdminInfo被调用",res);
                         next()
                     }else{
                         alert("router有问题")

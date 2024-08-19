@@ -6,53 +6,57 @@ import { getToken } from '@/utils/authToken';
 Vue.use(Vuex);
 
 var store = new Vuex.Store({//开启状态管理器
-    state:{
-        admin:{},
-        patientId:""
+    state: {
+        admin: {},
+        patientId: ""
     },
-    getters:{
-        getAdmin(state){
+    getters: {
+        getAdmin(state) {
             return state.admin
         },
-        getPatientId(state){
+        getPatientId(state) {
             return state.patientId
         }
     },
-    mutations:{
-        setAdmin(state,newAdmin){
+    mutations: {
+        setAdmin(state, newAdmin) {
             state.admin = newAdmin;
         },
-        setPatientId(state,newPatientId){
+        setPatientId(state, newPatientId) {
             state.patientId = newPatientId
         }
     },
-    actions:{
-        setAdmin(store,newAdmin){
-            store.commit('setAdmin',newAdmin);
+    actions: {
+        setAdmin(store, newAdmin) {
+            store.commit('setAdmin', newAdmin);
         },
-        setPatientId(store,newPatientId){
-            store.commit("setPatientId",newPatientId)
+        setPatientId(store, newPatientId) {
+            store.commit("setPatientId", newPatientId)
         },
-        async getAdminInfo(store){
+        async getAdminInfo(store) {
+            if (getToken() == null) {
+                return true
+            }
+            
             return await http.get(
                 "/tool1/parseToken",
                 {
-                    params:{
-                        token:getToken()
+                    params: {
+                        token: getToken()
                     }
                 }
             ).then(res => {
-                if(res){
-                    if(res.code != -200){
-                        store.commit("setAdmin",res.data.adminInfo);
+                if (res) {
+                    if (res.code != -200) {
+                        store.commit("setAdmin", res.data.adminInfo);
                         return true;
-                    }else{
+                    } else {
                         return false;
                     }
-                }else{
+                } else {
                     return false;
                 }
-                
+
             })
         }
     }

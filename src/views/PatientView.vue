@@ -25,7 +25,7 @@
                 </el-menu>
             </div>
         </el-header>
-        <el-main>
+        <el-main v-loading="mainLoading">
             <h1>个人中心</h1>
             <div id="mainDiv">
                 <div id="patientIndex">
@@ -87,7 +87,7 @@
 
         <el-dialog title="充值" :visible.sync="addBudgetVisible" width="400px">
             <span>充值金额：</span>
-            <el-input v-model="addBUdgetNum"  style="width: 70%;"></el-input>
+            <el-input v-model="addBUdgetNum" style="width: 70%;"></el-input>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="addBudgetVisible = false">取 消</el-button>
                 <el-button type="primary" @click="addBudgetCommit">确 定</el-button>
@@ -148,16 +148,17 @@ import { FailInMsg } from '@/api/errorNoties';
 export default {
     data() {
         return {
-            addBudgetVisible:false,
-            addBUdgetNum:"",
+            addBudgetVisible: false,
+            mainLoading:false,
+            addBUdgetNum: "",
             isLogin: false,
             drawerVisible: false,
             dialogFormVisible: false,
             loading: false,
-            drawerLoading:false,
+            drawerLoading: false,
             total: 1,
             currentPage: 1,
-            pageSize: 15,
+            pageSize: 8,
             patient: {},
             dialogForm: {
                 patientName: "",
@@ -170,12 +171,10 @@ export default {
             orderConclution: ""
         }
     },
-    created() {
-        this.$store.dispatch("getAdminInfo")
-
+    created(){
+        // this.getNewAdminInfo()
     },
     mounted() {
-        this.$store.dispatch("getAdminInfo")
         this.patient = this.$store.getters.getAdmin
         if (this.$store.getters.getAdmin.patientName != undefined) {
             this.isLogin = true
@@ -183,6 +182,28 @@ export default {
         this.getOrder()
     },
     methods: {
+        // async getNewAdminInfo(){
+        //     this.mainLoading = true
+        //     try{
+        //         const res = await this.$axios.post(
+        //             "/patient1/getNewInfo",
+        //             {
+        //                 patientId:this.patient.patientId
+        //             }
+        //         )
+        //         console.log(res);
+        //         await setToken(res.data.data);
+        //         await this.$store.dispatch("getAdminInfo");
+        //         this.patient = this.$store.getters.getAdmin
+        //         // location.reload()
+        //     }catch(error){
+        //         console.log(error);
+        //     }finally{
+        //         this.mainLoading = false;
+        //     }
+        // },
+
+
         //获取数据 
         getOrder() {
             this.loading = true
@@ -240,6 +261,7 @@ export default {
                 this.loading = false;
                 if (res.code == 1) {
                     successInMsg("结账成功")
+                    // this.getNewAdminInfo()
                     this.getOrder();
                 } else if (res.code == -2) {
                     FailInMsg("余额不足")
@@ -265,13 +287,35 @@ export default {
                     this.$store.commit("setAdmin", res.data)
                     this.dialogFormVisible = false
                     successInMsg("修改成功");
-                    location.reload()
+                    // this.getNewAdminInfo()
                 }
             })
 
         },
-        addBudgetCommit(){
-            alert("还没做")
+        addBudgetCommit() {
+            // this.$axios.post(
+            //     "/pay/alipay",
+            //     {
+            //         total_amount: this.addBUdgetNum
+            //     }
+            // ).then((res) => {
+            //     console.log(res);
+            //     this.iframeSrc = res.data.msg;
+            //     // const div = document.createElement('div')
+            //     // div.innerHTML = res.data.msg
+            //     // document.body.appendChild(div)
+            //     // document.forms[0].submit() //重要，这个才是点击跳页面的核心
+
+            // });
+
+            this.$router.push({
+                path: '/payment',
+                query: {
+                    total_amount: this.addBUdgetNum,
+                    patientId:this.patient.patientId
+                }
+            })
+
         },
         openForm() {
             this.dialogFormVisible = true;
@@ -282,9 +326,9 @@ export default {
 
 
         },
-        openAddForm(){
-            this.addBUdgetNum = "",
-            this.addBudgetVisible =true;
+        openAddForm() {
+            this.addBUdgetNum = ""
+            this.addBudgetVisible = true;
         },
         // 辅助方法
         handleCurrentChange(index) {
@@ -353,7 +397,7 @@ export default {
     position: absolute;
     right: 3%;
     width: 60%;
-    height: 1000px;
+    height: 600px;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04)
 }

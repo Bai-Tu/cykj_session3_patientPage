@@ -37,9 +37,9 @@
 
 <script>
 import { FailInMsg } from '@/api/errorNoties';
-import {  accNotLegal, accountExist, checkCodeError, systemError } from '@/api/errorNoties';
-import {  successInMsg, successRigister } from '@/api/successNoties';
-import {blockForThreeSeconds} from '@/api/outherTools'
+import { accNotLegal, accountExist, checkCodeError, systemError } from '@/api/errorNoties';
+import { successInMsg, successRigister } from '@/api/successNoties';
+import { blockForThreeSeconds } from '@/api/outherTools'
 import { setToken } from '@/utils/authToken';
 
 
@@ -61,32 +61,40 @@ export default {
         this.refreshCheckCode();
     },
     methods: {
-        doLogin() {
-            if(this.acc.length != 18 && this.acc.length!=11){
-                FailInMsg("请输入11位电话或18位身份证作为账号")
-                return
+        async doLogin() {
+            if (this.acc.length !== 18 && this.acc.length !== 11) {
+                FailInMsg("请输入11位电话或18位身份证作为账号");
+                return;
             }
             this.loading = true;
-            this.$axios.post(
-                "/patient1/patientLogin",
-                {
+            try {
+                const res = await this.$axios.post("/patient1/patientLogin", {
                     acc: this.acc,
                     pwd: this.pwd
+                });
+
+                if (res.code === 1) {
+                    successInMsg("登陆成功，稍后会自动跳转");
+                    setToken(res.data);
+
+                    // 等待 getAdminInfo 处理完成
+                    await this.$store.dispatch("getAdminInfo");
+
+                    // 延迟2秒钟
+                    await blockForThreeSeconds();
+
+                    // 跳转到首页
+                    this.$router.push("/");
+
+                } else if (res.code === -2) {
+                    FailInMsg("账号被冻结，请联系管理员进行处理");
                 }
-            ).then((res) => {
-                this.loading = false
-                if(res.code == 1){
-                    successInMsg("登陆成功，稍后会自动跳转")
-                    setToken(res.data)
-                    blockForThreeSeconds().then(() => {
-                        this.$router.push(
-                            "/"
-                        )
-                    })
-                }else if(res.code == -2){
-                    FailInMsg("账号被冻结，请联系管理员进行处理")
-                }
-            })
+            } catch (error) {
+                console.error("Login failed:", error);
+                FailInMsg("登录失败，请重试");
+            } finally {
+                this.loading = false;
+            }
 
         },
         refreshCheckCode() {
@@ -124,6 +132,7 @@ export default {
                 } else {
                     successRigister()
                     setToken(res.data)
+                    this.$store.commit("getAdminInfo")
                     blockForThreeSeconds().then(() => {
                         this.$router.push(
                             "/"
@@ -132,7 +141,7 @@ export default {
                 }
             })
         },
-        back(){
+        back() {
             this.$router.push(
                 "/"
             )

@@ -10,15 +10,15 @@
                 <el-menu class="el-menu-demo" mode="horizontal" background-color="#545c64" text-color="#fff"
                     active-text-color="#ffd04b">
                     <el-menu-item @click="back">首页</el-menu-item>
-                    <el-menu-item @click="gePatient">个人中心</el-menu-item>
+                    <el-menu-item @click="getPatient">个人中心</el-menu-item>
                     <el-menu-item v-show="!isLogin" @click="goLogin">登陆/注册</el-menu-item>
                     <el-dropdown v-show="isLogin">
                         <i class="el-icon-s-custom" style="margin-right: 15px;cursor:default;">
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item>修改密码</el-dropdown-item>
-                                <el-dropdown-item @click="quite">退出登录</el-dropdown-item>
+                                <el-dropdown-item @click.native="quite">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
-                            <span style="color: wheat;">{{ this.$store.getters.getAdmin.patientName
+                            <span style="color: wheat;">{{ patientName
                                 }}</span>
                         </i>
                     </el-dropdown>
@@ -63,29 +63,36 @@
 <script>
 import { removeToken } from '@/utils/authToken'
 import { defaultSuccess } from '@/api/successNoties'
+import { blockForThreeSeconds } from '@/api/outherTools';
 
 export default {
     data() {
         return {
-            isLogin: false
+            isLogin: false, 
         }
     },
-    created() {
-        this.$store.dispatch("getAdminInfo")
-        console.log("patientNmae", this.$store.getters.getAdmin.patientName);
-
+    computed:{
+        patientName() {return this.$store.getters.getAdmin.patientName} 
     },
     mounted() {
-        this.$store.dispatch("getAdminInfo")
+        this.getAdminINFO()
+        console.log("patientName",this.$store.getters.getAdmin.patientName);
+        
         if (this.$store.getters.getAdmin.patientName != undefined) {
             this.isLogin = true
         }
+        this.$forceUpdate()
     },
     methods: {
-
+        async getAdminINFO() {
+            await this.$store.dispatch("getAdminInfo")
+        },
         quite() {
             removeToken()
             defaultSuccess()
+            blockForThreeSeconds().then(() => {
+                location.reload()
+            })
         },
         // 跳转
         goLogin() {
@@ -96,7 +103,7 @@ export default {
         back() {
             location.reload()
         },
-        gePatient() {
+        getPatient() {
             if (this.isLogin == true) {
                 this.$router.push(
                     "/patient"
@@ -133,7 +140,7 @@ export default {
 }
 
 #div_ul>li {
-    width: 700px;
+    width: 48%;
     height: 280px;
     float: left;
     margin-right: 20px;
@@ -228,15 +235,5 @@ export default {
     /* 确保图片高度不超出容器 */
     object-fit: cover;
     /* 保持图片比例填满容器 */
-}
-</style>
-
-<style>
-.el-carousel__arrow--left {
-    left: 20%;
-}
-
-.el-carousel__arrow--right {
-    right: 20%;
 }
 </style>
