@@ -48,7 +48,7 @@ var store = new Vuex.Store({//开启状态管理器
             ).then(res => {
                 if (res) {
                     if (res.code != -200) {
-                        store.commit("setAdmin", res.data.adminInfo);
+                        store.commit("setAdmin", res.data);
                         return true;
                     } else {
                         return false;

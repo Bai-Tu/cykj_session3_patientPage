@@ -144,6 +144,7 @@
 import { removeToken } from '@/utils/authToken'
 import { defaultSuccess, successInMsg } from '@/api/successNoties'
 import { FailInMsg } from '@/api/errorNoties';
+import { blockForThreeSeconds } from '@/api/outherTools';
 
 export default {
     data() {
@@ -171,9 +172,6 @@ export default {
             orderConclution: ""
         }
     },
-    created(){
-        // this.getNewAdminInfo()
-    },
     mounted() {
         this.patient = this.$store.getters.getAdmin
         if (this.$store.getters.getAdmin.patientName != undefined) {
@@ -182,28 +180,6 @@ export default {
         this.getOrder()
     },
     methods: {
-        // async getNewAdminInfo(){
-        //     this.mainLoading = true
-        //     try{
-        //         const res = await this.$axios.post(
-        //             "/patient1/getNewInfo",
-        //             {
-        //                 patientId:this.patient.patientId
-        //             }
-        //         )
-        //         console.log(res);
-        //         await setToken(res.data.data);
-        //         await this.$store.dispatch("getAdminInfo");
-        //         this.patient = this.$store.getters.getAdmin
-        //         // location.reload()
-        //     }catch(error){
-        //         console.log(error);
-        //     }finally{
-        //         this.mainLoading = false;
-        //     }
-        // },
-
-
         //获取数据 
         getOrder() {
             this.loading = true
@@ -261,8 +237,9 @@ export default {
                 this.loading = false;
                 if (res.code == 1) {
                     successInMsg("结账成功")
-                    // this.getNewAdminInfo()
-                    this.getOrder();
+                    blockForThreeSeconds().then(()=>{
+                        location.reload()
+                    })
                 } else if (res.code == -2) {
                     FailInMsg("余额不足")
                 } else {
@@ -287,7 +264,9 @@ export default {
                     this.$store.commit("setAdmin", res.data)
                     this.dialogFormVisible = false
                     successInMsg("修改成功");
-                    // this.getNewAdminInfo()
+                    blockForThreeSeconds().then(()=>{
+                        location.reload()
+                    })
                 }
             })
 
